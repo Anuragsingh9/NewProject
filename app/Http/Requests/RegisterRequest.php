@@ -28,7 +28,8 @@ class RegisterRequest extends FormRequest
         return [
             'name' =>'required',
             'email'=>'required|email|unique:users,email,',
-            'password'=>'required',
+            'password'=>['required','min:6',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/', ] // password should contain atleast one upper case,lower case,number and special character
         ];
     }
 
