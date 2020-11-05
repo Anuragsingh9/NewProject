@@ -23,5 +23,8 @@ Route::middleware('auth:api')->group(function() {
 
     Route::get('user/{userId}/detail', 'UserController@show');
     Route::get('logout', 'AuthController@logout');
+    Route::post('create/task','TodoController@createTask');
+    Route::post('update/task','TodoController@updateTasks');
+
 
 });
