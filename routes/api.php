@@ -25,6 +25,17 @@ Route::middleware('auth:api')->group(function() {
     Route::get('logout', 'AuthController@logout');
     Route::post('create/task','TodoController@createTask');
     Route::post('update/task','TodoController@updateTasks');
+    Route::get('get/task','TodoController@getTasksByUser');
+    Route::get('all/task','TodoController@getAllTasks');
+    Route::post('delete','TodoController@deleteTask');
+    Route::get('task','TodoController@getATask');
+    Route::get('search','TodoController@searchTask');
+
+
+
+
+
+
 
 
 });
