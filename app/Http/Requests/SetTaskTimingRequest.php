@@ -2,12 +2,13 @@
 
 namespace App\Http\Requests;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
 
-class UpdateTaskRequest extends FormRequest
+class SetTaskTimingRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,13 +27,13 @@ class UpdateTaskRequest extends FormRequest
      */
     public function rules()
     {
+        $todayDate = Carbon::now()->toDateString();
+
         return [
             'task_id' => ['required',
-                Rule::exists('tasks','id')
-            ],
-            'status'    => ['required',
-                Rule::in(['complete']),
-            ],
+                Rule::exists('schudeule_timings','task_id')],
+            'date'    => ['required','date',
+                'date_format:Y-m-d','after:'.$todayDate],
         ];
     }
 

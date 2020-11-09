@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\CustomValidationException;
 use App\Http\Requests\CreateTaskRequest;
+use App\Http\Requests\SetTaskTimingRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
+use App\Http\Resources\TaskTimingResource;
 use App\Task;
+use App\TaskTiming;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TodoController extends Controller
 {
@@ -97,5 +102,47 @@ class TodoController extends Controller
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
+    }
+
+    public function setTaskTiming(SetTaskTimingRequest $request){
+        try{
+            $param = [
+                'schedule_time' => $request->date,
+                'task_id' => $request->task_id,
+            ];
+           $taskDate = TaskTiming::create($param);
+           return new TaskTimingResource($taskDate);
+        } catch (\Exception $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+        }
+    }
+
+    public function getTodaysTasks(){
+        try{
+            $todayTask = TaskTiming::with('scheduleTiming')
+                ->where('schedule_time','=',Carbon::today()->toDateTimeString())->get();
+            if (!$todayTask){
+                throw new CustomValidationException('No matching results founds');
+            }
+            return $todayTask;
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+        }
+
+    }
+
+    public function todayTaskCount(){
+        try{
+            $task = TaskTiming::where('schedule_time','=',Carbon::today()->toDateTimeString());
+            $todayTaskCount = $task->count();
+            if (!$todayTaskCount){
+                throw new CustomValidationException('No task for today');
+            }
+            return response()->json(['Today' => $todayTaskCount, 'status'=>TRUE],200);
+
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+        }
+
     }
 }

@@ -3,7 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator;
+
 
 class CreateTaskRequest extends FormRequest
 {
@@ -30,5 +33,15 @@ class CreateTaskRequest extends FormRequest
                     Rule::in(['incomplete']),
                     ],
         ];
+    }
+
+    /**
+     * @param Validator $validator
+     */
+    protected function failedValidation(Validator $validator) {
+        throw new HttpResponseException(response()->json([
+            'status' => false,
+            'msg'    => implode(',', $validator->errors()->all())
+        ], 422));
     }
 }

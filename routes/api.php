@@ -30,6 +30,11 @@ Route::middleware('auth:api')->group(function() {
     Route::post('delete','TodoController@deleteTask');
     Route::get('task','TodoController@getATask');
     Route::get('search','TodoController@searchTask');
+    Route::post('task/timing','TodoController@setTaskTiming');
+    Route::get('today/task','TodoController@getTodaysTasks');
+    Route::get('today/count','TodoController@todayTaskCount');
+
+
 
 
 
