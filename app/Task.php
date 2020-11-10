@@ -16,6 +16,13 @@ class Task extends Model
 
 //    public function scheduleTiming()
 //    {
-//        return $this->hasOne(TaskTiming::class,'task_id');
+//        return $this->hasMany(TaskTiming::class,'task_id');
 //    }
+
+    public function task()
+    {
+        return $this->hasMany(TaskTiming::class,'task_id')
+            ->where('schedule_time','=',Carbon::today()->toDateString())
+            ;
+    }
 }

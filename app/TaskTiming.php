@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class TaskTiming extends Model
@@ -14,10 +15,15 @@ class TaskTiming extends Model
 //    {
 //        return $this->hasOne(Task::class,'id');
 //    }
-    public function scheduleTiming()
-    {
-        return $this->hasOne(Task::class,'id');
-    }
-
+//    public function task()
+//    {
+//        return $this->hasMany(Task::class,'id');
+//    }
+//    public function task()
+//    {
+//        return $this->hasMany(Task::class,'id')
+//
+//            ;
+//    }
     
 }

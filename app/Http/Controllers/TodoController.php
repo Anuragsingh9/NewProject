@@ -121,6 +121,8 @@ class TodoController extends Controller
         try{
             $todayTask = TaskTiming::with('scheduleTiming')
                 ->where('schedule_time','=',Carbon::today()->toDateTimeString())->get();
+
+//            return $todayTask;
             if (!$todayTask){
                 throw new CustomValidationException('No matching results founds');
             }
@@ -144,5 +146,21 @@ class TodoController extends Controller
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
 
+    }
+
+    public function getNextSevenDaysTasks(){
+        try{
+//            $sevenDaysTask = TaskTiming::whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()])
+//                ->orderBy('schedule_time')
+//                ->get();
+//            return $sevenDaysTask;
+//            $task = Task::with('scheduleTiming')->get();
+            $todayTask = Task::whereHas('task',function ($q){
+                $q->whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()]);
+            })->get();
+            return $todayTask;
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+        }
     }
 }

@@ -33,7 +33,10 @@ Route::middleware('auth:api')->group(function() {
     Route::post('task/timing','TodoController@setTaskTiming');
     Route::get('today/task','TodoController@getTodaysTasks');
     Route::get('today/count','TodoController@todayTaskCount');
-
+    Route::get('sevenDays/task','TodoController@getNextSevenDaysTasks');
+    Route::get('test', function (){
+        return "ok";
+    });
 
 
 
