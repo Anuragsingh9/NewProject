@@ -34,10 +34,8 @@ Route::middleware('auth:api')->group(function() {
     Route::get('today/task','TodoController@getTodaysTasks');
     Route::get('today/count','TodoController@todayTaskCount');
     Route::get('sevenDays/task','TodoController@getNextSevenDaysTasks');
-    Route::get('test', function (){
-        return "ok";
-    });
-
+    Route::get('sevenDays/count','TodoController@countSevenDaysTasks');
+    Route::get('count/task','TodoController@countTask');
 
 
 

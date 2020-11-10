@@ -19,10 +19,16 @@ class Task extends Model
 //        return $this->hasMany(TaskTiming::class,'task_id');
 //    }
 
-    public function task()
+    public function todayTaskTiming()
     {
         return $this->hasMany(TaskTiming::class,'task_id')
-            ->where('schedule_time','=',Carbon::today()->toDateString())
+            ->where('schedule_time','=',Carbon::today()->toDateTimeString())
             ;
+    }
+
+    public function sevenDaysTaskTiming()
+    {
+        return $this->hasMany(TaskTiming::class,'task_id')
+            ->whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()]);
     }
 }

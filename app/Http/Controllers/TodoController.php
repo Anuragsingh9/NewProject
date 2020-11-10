@@ -13,7 +13,6 @@ use App\TaskTiming;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class TodoController extends Controller
 {
@@ -119,10 +118,10 @@ class TodoController extends Controller
 
     public function getTodaysTasks(){
         try{
-            $todayTask = TaskTiming::with('scheduleTiming')
-                ->where('schedule_time','=',Carbon::today()->toDateTimeString())->get();
-
-//            return $todayTask;
+//            dd(Carbon::today());
+            $todayTask = Task::with(['todayTaskTiming'=>function ($q){
+                $q->where('schedule_time','=',Carbon::today()->toDateTimeString());
+            }])->whereHas('todayTaskTiming')->get();
             if (!$todayTask){
                 throw new CustomValidationException('No matching results founds');
             }
@@ -150,17 +149,37 @@ class TodoController extends Controller
 
     public function getNextSevenDaysTasks(){
         try{
-//            $sevenDaysTask = TaskTiming::whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()])
-//                ->orderBy('schedule_time')
-//                ->get();
-//            return $sevenDaysTask;
-//            $task = Task::with('scheduleTiming')->get();
-            $todayTask = Task::whereHas('task',function ($q){
-                $q->whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()]);
-            })->get();
+            $todayTask = Task::with(['sevenDaysTaskTiming'=>function ($q){
+                $q->whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()])
+                    ->orderBy('schedule_time');
+            }])->whereHas('sevenDaysTaskTiming')->get();
+            if (!$todayTask){
+                throw new CustomValidationException('No Records Found');
+            }
             return $todayTask;
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
+    }
+
+    public function countSevenDaysTasks(){
+        try{
+            $task = TaskTiming::whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()]);
+            $todayTaskCount = $task->count();
+            if (!$todayTaskCount){
+                throw new CustomValidationException('No task for today');
+            }
+            return response()->json(['Today' => $todayTaskCount, 'status'=>TRUE],200);
+
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+        }
+    }
+
+    public function countTask(){
+            $task = Task::get();
+            $totalTask = $task->count();
+            $incomplete = Task::where('status','Incomplete')->count();
+            return response()->json(['data'=>$incomplete .'/'.$totalTask,'status'=>TRUE],200);
     }
 }
