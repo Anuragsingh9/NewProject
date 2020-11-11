@@ -4,6 +4,7 @@ namespace App;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class TaskTiming extends Model
 {
@@ -11,10 +12,10 @@ class TaskTiming extends Model
     protected $fillable = ['task_id','schedule_time'];
 
 
-//    public function scheduleTime()
-//    {
-//        return $this->hasOne(Task::class,'id');
-//    }
+    public function getTask()
+    {
+        return $this->hasOne(Task::class,'id');
+    }
 //    public function task()
 //    {
 //        return $this->hasMany(Task::class,'id');
