@@ -17,13 +17,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::post('register', 'AuthController@register');
-Route::post('login', 'AuthController@login');
+Route::post('login', 'AuthController@login')->name('task.login');
 
 Route::middleware('auth:api')->group(function() {
 
     Route::get('user/{userId}/detail', 'UserController@show');
     Route::get('logout', 'AuthController@logout');
-    Route::post('create/task','TodoController@createTask');
+    Route::post('create/task','TodoController@createTask')->name('task.create');
     Route::post('update/task','TodoController@updateTasks');
     Route::get('get/task','TodoController@getTasksByUser');
     Route::get('all/task','TodoController@getAllTasks');
