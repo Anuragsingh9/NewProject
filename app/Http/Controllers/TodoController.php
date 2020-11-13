@@ -28,7 +28,6 @@ class TodoController extends Controller
 
     public function createTask(CreateTaskRequest $request){
         try{
-            dd(Auth::user()->id);
             $param = [
                 'title'     => $request->title,
                 'status'    => $request->status,
