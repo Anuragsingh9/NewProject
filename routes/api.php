@@ -16,30 +16,26 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::post('register', 'AuthController@register');
-Route::post('login', 'AuthController@login')->name('task.login');
+Route::post('register', 'AuthController@register'); // User registration
+Route::post('login', 'AuthController@login'); // login
 
 Route::middleware('auth:api')->group(function() {
 
-    Route::get('user/{userId}/detail', 'UserController@show');
-    Route::get('logout', 'AuthController@logout');
-    Route::post('create/task','TodoController@createTask')->name('task.create');
-    Route::post('update/task','TodoController@updateTasks');
-    Route::get('get/task','TodoController@getTasksByUser');
-    Route::get('all/task','TodoController@getAllTasks');
-    Route::post('delete','TodoController@deleteTask');
-    Route::get('task','TodoController@getATask');
-    Route::get('search','TodoController@searchTask');
-    Route::post('task/timing','TodoController@setTaskTiming');
-    Route::get('today/task','TodoController@getTodaysTasks');
-    Route::get('today/count','TodoController@todayTaskCount');
-    Route::get('sevenDays/task','TodoController@getNextSevenDaysTasks');
-    Route::get('sevenDays/count','TodoController@countSevenDaysTasks');
-    Route::get('count/task','TodoController@countTask');
-
-
-
-
+//    Route::get('user/{userId}/detail', 'UserController@show');
+    Route::get('logout', 'AuthController@logout'); // logout
+    Route::post('create/task','TodoController@createTask'); // create task
+    Route::post('update/task/{taskId}','TodoController@updateTasks'); // update task
+    Route::get('get/task','TodoController@getTasksByUser'); // get all task of logged in user
+    Route::get('all/task','TodoController@getAllTasks'); // get all task(irrespective of user)
+    Route::post('delete','TodoController@deleteTask'); // delete a task
+    Route::get('task','TodoController@getATask'); // get a particular task
+    Route::get('search','TodoController@searchTask'); // search task of logged in user
+    Route::post('task/timing','TodoController@setTaskTiming'); // schedule a date for task
+    Route::get('today/task','TodoController@getTodaysTasks'); // get all task which have schedule date of today of logged in user
+    Route::get('today/count','TodoController@todayTaskCount'); // count all task of today of logged in user
+    Route::get('sevenDays/task','TodoController@getNextSevenDaysTasks'); // get all task which have schedule date of next seven days of logged in user
+    Route::get('sevenDays/count','TodoController@countSevenDaysTasks'); // count all task of next seven days of logged in user
+    Route::get('count/task','TodoController@countTask'); // count task in fraction of completed and incomplete task
 
 
 

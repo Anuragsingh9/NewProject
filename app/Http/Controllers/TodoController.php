@@ -14,11 +14,15 @@ use App\TaskTiming;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use function foo\func;
 
 class TodoController extends Controller
 
 {
+    /**
+     * check weather task belongs to logged in user or not
+     * @param $taskId
+     * @return mixed
+     */
     public function checkAuth($taskId){
         return Task::where(function ($q) use ($taskId){
             $q->where('id',$taskId);
@@ -26,6 +30,10 @@ class TodoController extends Controller
         })->first();
     }
 
+    /**
+     * @param CreateTaskRequest $request
+     * @return TaskResource|\Illuminate\Http\JsonResponse
+     */
     public function createTask(CreateTaskRequest $request){
         try{
             $param = [
@@ -40,9 +48,13 @@ class TodoController extends Controller
         }
     }
 
-    public function updateTasks(UpdateTaskRequest $request){
+    /**
+     * @param UpdateTaskRequest $request
+     * @param $taskId
+     * @return TaskResource|\Illuminate\Http\JsonResponse
+     */
+    public function updateTasks(UpdateTaskRequest $request,$taskId){
         try{
-            $taskId = $request->task_id;
             $check = $this->checkAuth($taskId);
             if (!$check){
                 throw new CustomValidationException('Unauthorized Action');
@@ -57,6 +69,10 @@ class TodoController extends Controller
         }
     }
 
+    /**
+     *  get all the task of logged in user
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
     public function getTasksByUser(){
         try{
             $task = Task::where('user_id',Auth::user()->id)
@@ -70,11 +86,20 @@ class TodoController extends Controller
         }
     }
 
+    /**
+     * get all the task irrespective of user.
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
     public function getAllTasks(){
         $task = Task::with('user')->orderBy('created_at', 'desc')->get();
         return TaskResource::collection($task)->additional(['status' => TRUE]);
     }
 
+    /**
+     * delete a task accordin to task id
+     * @param DeleteTaskRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function deleteTask(DeleteTaskRequest $request){
         try{
             $taskId = $request->task_id;
@@ -91,6 +116,11 @@ class TodoController extends Controller
             }
     }
 
+    /**
+     * get a particular task by task id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getATask(Request $request){
         try{
             $taskId = $request->task_id;
@@ -105,6 +135,11 @@ class TodoController extends Controller
         }
     }
 
+    /**
+     * search task of logged in user by title of the task
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function searchTask(Request $request){
         try{
             $title = $request->title;
@@ -121,6 +156,12 @@ class TodoController extends Controller
         }
     }
 
+    /**
+     * set a schedule timing for a task.
+     * schedule date should be more than todays date
+     * @param SetTaskTimingRequest $request
+     * @return TaskTimingResource|\Illuminate\Http\JsonResponse
+     */
     public function setTaskTiming(SetTaskTimingRequest $request){
         try{
             $taskId = $request->task_id;
@@ -129,7 +170,7 @@ class TodoController extends Controller
                 throw new CustomValidationException('Unauthorized Action');
             }
             $param = [
-                'schedule_time' => $request->date,
+                'schedule_time' => $request->schedule_time,
                 'task_id' => $request->task_id,
             ];
            $taskDate = TaskTiming::create($param);
@@ -139,6 +180,10 @@ class TodoController extends Controller
         }
     }
 
+    /**
+     * get all task of logged in user of which have schedule date is equal to today
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getTodaysTasks(){
         try{
             $todayTask = Task::with(['todayTaskTiming'=>function ($q){
@@ -155,6 +200,10 @@ class TodoController extends Controller
 
     }
 
+    /**
+     * count all the task of logged in user which have schedule date for today
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function todayTaskCount(){
         try{
             $task = $this->getTodaysTasks();
@@ -170,6 +219,10 @@ class TodoController extends Controller
 
     }
 
+    /**
+     * get all the task of logged in user which have schedule date for next seven days
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getNextSevenDaysTasks(){
         try{
             $sevenDayTask = Task::with(['sevenDaysTaskTiming'=>function ($q){
@@ -180,12 +233,16 @@ class TodoController extends Controller
             if (!$sevenDayTask){
                 throw new CustomValidationException('No Records Found');
             }
-            return $sevenDayTask;
+            return response()->json(['status' => TRUE,'data'=>$sevenDayTask],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         }
     }
 
+    /**
+     * count all the task of logged in user which have schedule date for next seven days
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function countSevenDaysTasks(){
         try{
             $task = $this->getNextSevenDaysTasks();
@@ -199,6 +256,11 @@ class TodoController extends Controller
         }
     }
 
+    /**
+     * count all the task logged in user according to status and display in fraction
+     * e.g- 3 complete/10 incomplete(3/10)
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function countTask(){
             $task = Task::where('user_id',Auth::user()->id)->get();
             $totalTask = $task->count();

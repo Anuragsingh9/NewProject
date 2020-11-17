@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Task;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -53,19 +54,17 @@ class todoTest extends TestCase
             ->assertStatus(201);
     }
 
-//    public function test_update(){
-//        $user = User::find(7); // find specific user
-//        $token = $user->createToken('Personal Access Token')->accessToken;
-//        $this->actingAs($user, 'api');
-//        $task = Task::find(13);
-//        $data =  [
-//            'title'              => 'News Creating',
-//            'status'             => 'complete',
-//        ];
-//        dd($data);
-//        $this->json('POST', 'api/update/task', $data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
-//            ->assertStatus(201);
-//    }
+    public function test_update(){
+        $user = User::find(7); // find specific user
+        $token = $user->createToken('Personal Access Token')->accessToken;
+        $this->actingAs($user, 'api');
+
+        $data =  [
+            'status'             => 'complete',
+        ];
+        $this->json('POST', 'api/update/task/14', $data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
+            ->assertStatus(200);
+    }
 
     public function test_getTask(){
         $user = User::find(7); // find specific user
@@ -86,14 +85,14 @@ class todoTest extends TestCase
             ->assertStatus(200);
     }
 
-    public function test_delete(){
-        $user = User::find(7); // find specific user
-        $token = $user->createToken('Personal Access Token')->accessToken;
-        $this->actingAs($user, 'api');
-        $data =  ['task_id'=>13];
-        $this->json('POST', 'api/delete',$data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
-            ->assertStatus(200);
-    }
+//    public function test_delete(){
+//        $user = User::find(7); // find specific user
+//        $token = $user->createToken('Personal Access Token')->accessToken;
+//        $this->actingAs($user, 'api');
+//        $data =  ['task_id'=>13];
+//        $this->json('POST', 'api/delete',$data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
+//            ->assertStatus(200);
+//    }
 
     public function test_search(){
         $user = User::find(7); // find specific user
@@ -103,6 +102,40 @@ class todoTest extends TestCase
         $this->json('GET', 'api/search',$data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
             ->assertStatus(200);
     }
+
+    public function test_setTaskTiming(){
+        $user = User::find(7); // find specific user
+        $token = $user->createToken('Personal Access Token')->accessToken;
+        $this->actingAs($user, 'api');
+        $data =  [
+            'schedule_time' => Carbon::tomorrow()->toDateString(),
+            'task_id' => 15,
+        ];
+        $this->json('POST', 'api/task/timing',$data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
+            ->assertStatus(201);
+    }
+
+    public function test_getTodaysTasks(){
+        $user = User::find(7); // find specific user
+        $token = $user->createToken('Personal Access Token')->accessToken;
+        $this->actingAs($user, 'api');
+        $data = [];
+        $this->json('GET', 'api/today/task',$data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
+            ->assertStatus(200);
+    }
+
+
+
+    public function test_NextSevenDaysTasks(){
+        $user = User::find(7); // find specific user
+        $token = $user->createToken('Personal Access Token')->accessToken;
+        $this->actingAs($user, 'api');
+        $data = [];
+        $this->json('GET', 'api/sevenDays/task',$data, ['Accept' => 'application/json','Authorization' => 'Bearer '. $token])
+            ->assertStatus(200);
+    }
+
+
 
 
 }

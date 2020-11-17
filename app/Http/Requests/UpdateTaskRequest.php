@@ -27,11 +27,11 @@ class UpdateTaskRequest extends FormRequest
     public function rules()
     {
         return [
-            'task_id' => ['required',
-                Rule::exists('tasks','id')
-            ],
+//            'task_id' => ['required',
+//                Rule::exists('tasks','id')
+//            ],
             'status'    => ['required',
-                Rule::in(['complete']),
+                Rule::in(['complete']), // for updating a record status must be complete
             ],
         ];
     }

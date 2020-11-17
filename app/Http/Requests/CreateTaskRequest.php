@@ -30,7 +30,7 @@ class CreateTaskRequest extends FormRequest
         return [
             'title'     => ['required','min:6','max:20'],
             'status'    => ['required',
-                    Rule::in(['incomplete']),
+                    Rule::in(['incomplete']), // while creating task status must be incomplete
                     ],
         ];
     }

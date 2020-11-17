@@ -31,8 +31,8 @@ class SetTaskTimingRequest extends FormRequest
 
         return [
             'task_id' => ['required',
-                Rule::exists('schudeule_timings','task_id')],
-            'date'    => ['required','date',
+                Rule::exists('tasks','id')],
+            'schedule_time'    => ['required','date',
                 'date_format:Y-m-d','after:'.$todayDate],
         ];
     }
