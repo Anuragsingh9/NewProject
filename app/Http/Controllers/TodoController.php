@@ -62,12 +62,15 @@ class TodoController extends Controller
             $param = [
                 'status'    => $request->status,
             ];
+            // tst ok
             Task::where('id',$taskId)->update($param);
             return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception){
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
     }
+
+
 
     /**
      *  get all the task of logged in user
