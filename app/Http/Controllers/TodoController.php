@@ -43,8 +43,8 @@ class TodoController extends Controller
             ];
             $task = Task::create($param);
             return (new TaskResource($task))->additional(['status' => TRUE]);
-        }catch (\Exception $e){
-            return response()->json(['status' => FALSE, 'error' => $e->getMessage()],403);
+        } catch (\Exception $e){
+            return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
         }
     }
 
@@ -62,11 +62,12 @@ class TodoController extends Controller
             $param = [
                 'status'    => $request->status,
             ];
-            // tst ok
             Task::where('id',$taskId)->update($param);
             return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception){
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+        } catch (\Exception $e){
+            return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
         }
     }
 
@@ -86,6 +87,8 @@ class TodoController extends Controller
             return TaskResource::collection($task)->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception){
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+        } catch (\Exception $e){
+            return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
         }
     }
 
@@ -113,10 +116,12 @@ class TodoController extends Controller
             $task = Task::where('id',$taskId )->first();
             $task->delete();
             return response()->json(['message'=>'Task Deleted'],200);
-        }
-        catch (CustomValidationException $exception) {
+        } catch (CustomValidationException $exception) {
                 return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],401);
-            }
+        } catch (\Exception $e){
+            return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
+        }
+
     }
 
     /**
@@ -135,6 +140,8 @@ class TodoController extends Controller
             return response()->json(['status'=> TRUE, 'data' => $task],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+        } catch (\Exception $e){
+            return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
         }
     }
 
@@ -156,6 +163,8 @@ class TodoController extends Controller
             return response()->json($task);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+        } catch (\Exception $e){
+            return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
         }
     }
 
@@ -178,6 +187,8 @@ class TodoController extends Controller
             ];
            $taskDate = TaskTiming::create($param);
            return (new TaskTimingResource($taskDate))->additional(['status' => TRUE]);
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
@@ -199,6 +210,8 @@ class TodoController extends Controller
             return response()->json(['status'=>TRUE, 'data' =>$todayTask ],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+        } catch (\Exception $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
 
     }
@@ -218,6 +231,8 @@ class TodoController extends Controller
 
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+        } catch (\Exception $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
 
     }
@@ -239,6 +254,8 @@ class TodoController extends Controller
             return response()->json(['status' => TRUE,'data'=>$sevenDayTask],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+        } catch (\Exception $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
     }
 
@@ -255,6 +272,8 @@ class TodoController extends Controller
             }
             return response()->json(['Today' => $sevenDayTaskCount, 'status'=>TRUE],200);
         } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+        } catch (\Exception $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
     }
