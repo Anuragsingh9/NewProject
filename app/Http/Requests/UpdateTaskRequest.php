@@ -26,12 +26,10 @@ class UpdateTaskRequest extends FormRequest
      */
     public function rules()
     {
+        $status = ['complete','incomplete'];
         return [
-//            'task_id' => ['required',
-//                Rule::exists('tasks','id')
-//            ],
             'status'    => ['required',
-                Rule::in(['complete']), // for updating a record status must be complete
+                Rule::in($status), // for updating a record status must be complete
             ],
         ];
     }
