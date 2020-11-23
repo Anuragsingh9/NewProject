@@ -43,6 +43,12 @@ class TodoController extends Controller
                 'schedule_time' => $request->schedule_time,
             ];
             $task = Task::create($param);
+            $taskId = $task->id;
+            $param = [
+                'schedule_time' => $request->schedule_time,
+                'task_id' => $taskId,
+            ];
+           TaskTiming::create($param);
             return (new TaskResource($task))->additional(['status' => TRUE]);
         } catch (\Exception $e){
             return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
@@ -194,6 +200,15 @@ class TodoController extends Controller
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
     }
+
+//    public function updateTaskTiming(Request $request){
+//        try{
+//            $taskId = $request->task_id;
+//
+//        } catch (\Exeption $exception){
+//            return response()->json(['status'=> FALSE, 'error'=>$exception->getMessage()],500);
+//        }
+//    }
 
     /**
      * get all task of logged in user of which have schedule date is equal to today
