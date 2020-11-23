@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateSchudeuleTimingsTable extends Migration
+class AddPaidToTasksTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,8 @@ class CreateSchudeuleTimingsTable extends Migration
      */
     public function up()
     {
-        Schema::create('schudeule_timings', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('task_id');
-            $table->time('schedule_time');
-            $table->timestamps();
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->date('schedule_time')->nullable();
         });
     }
 
@@ -28,6 +25,8 @@ class CreateSchudeuleTimingsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('schudeule_timings');
+        Schema::table('tasks', function (Blueprint $table) {
+            $table->dropColumn('schedule_time');
+        });
     }
 }

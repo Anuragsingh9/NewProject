@@ -19,7 +19,7 @@ class TaskResource extends Resource
             'title'     => $this->title,
             'status'    => $this->status,
             'created_by'      => new UserResource($this->whenLoaded('user')),
-//            'schedule_time' => new TaskTimingResource($this->task_id),
+            'schedule_time' => $this->schedule_time,
 //            $this->mergeWhen($this->task_id != null, ['schedule_time' => new TaskTimingResource($this->task_id)]),
         ];
     }

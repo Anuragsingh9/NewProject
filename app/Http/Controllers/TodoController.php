@@ -40,6 +40,7 @@ class TodoController extends Controller
                 'title'     => $request->title,
                 'status'    => $request->status,
                 'user_id'   => Auth::user()->id,
+                'schedule_time' => $request->schedule_time,
             ];
             $task = Task::create($param);
             return (new TaskResource($task))->additional(['status' => TRUE]);

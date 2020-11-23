@@ -32,6 +32,7 @@ class CreateTaskRequest extends FormRequest
             'status'    => ['required',
                     Rule::in(['incomplete']), // while creating task status must be incomplete
                     ],
+//            'schedule_time' => 'required',
         ];
     }
 

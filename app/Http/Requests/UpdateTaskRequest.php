@@ -29,7 +29,7 @@ class UpdateTaskRequest extends FormRequest
         $status = ['complete','incomplete'];
         return [
             'status'    => ['required',
-                Rule::in($status), // for updating a record status must be complete
+                Rule::in($status), // for updating a record status must be complete or incomplete
             ],
         ];
     }
