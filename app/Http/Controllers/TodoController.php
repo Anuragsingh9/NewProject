@@ -9,6 +9,7 @@ use App\Http\Requests\SetTaskTimingRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Http\Resources\TaskTimingResource;
+use App\Services\TodoService;
 use App\Task;
 use App\TaskTiming;
 use Carbon\Carbon;
@@ -18,6 +19,13 @@ use Illuminate\Support\Facades\Auth;
 class TodoController extends Controller
 
 {
+
+    private $todoService;
+
+    public function __construct() {
+        $this->todoService = TodoService::getInstance();
+    }
+
     /**
      * check weather task belongs to logged in user or not
      * @param $taskId
@@ -42,7 +50,7 @@ class TodoController extends Controller
                 'user_id'   => Auth::user()->id,
                 'schedule_time' => $request->schedule_time,
             ];
-            $task = Task::create($param);
+            $task = $this->taskCreate($param);
             $taskId = $task->id;
             $param = [
                 'schedule_time' => $request->schedule_time,
@@ -50,7 +58,10 @@ class TodoController extends Controller
             ];
            TaskTiming::create($param);
             return (new TaskResource($task))->additional(['status' => TRUE]);
-        } catch (\Exception $e){
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()], 204);
+        }
+        catch (\Exception $e){
             return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
         }
     }
@@ -69,7 +80,7 @@ class TodoController extends Controller
             $param = [
                 'status'    => $request->status,
             ];
-            Task::where('id',$taskId)->update($param);
+            $this->todoService->taskUpdate($param,$taskId);
             return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception){
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
@@ -120,8 +131,7 @@ class TodoController extends Controller
             if (!$check){
                 throw new CustomValidationException('Unauthorized Action');
             }
-            $task = Task::where('id',$taskId )->first();
-            $task->delete();
+             $this->todoService->taskDelete($taskId);
             return response()->json(['message'=>'Task Deleted'],200);
         } catch (CustomValidationException $exception) {
                 return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],401);
@@ -134,7 +144,7 @@ class TodoController extends Controller
     /**
      * get a particular task by task id
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return TaskResource|\Illuminate\Http\JsonResponse
      */
     public function getATask(Request $request){
         try{
@@ -143,8 +153,8 @@ class TodoController extends Controller
             if (!$check){
                 throw new CustomValidationException('Task not found');
             }
-            $task = Task::with('user')->where('id',$taskId)->first();
-            return response()->json(['status'=> TRUE, 'data' => $task],200);
+             Task::with('user')->where('id',$taskId)->first();
+            return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $e){
@@ -192,7 +202,7 @@ class TodoController extends Controller
                 'schedule_time' => $request->schedule_time,
                 'task_id' => $request->task_id,
             ];
-           $taskDate = TaskTiming::create($param);
+            $taskDate = $this->todoService->createTaskTiming($param);
            return (new TaskTimingResource($taskDate))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
@@ -201,35 +211,37 @@ class TodoController extends Controller
         }
     }
 
-//    public function updateTaskTiming(Request $request){
-//        try{
-//            $taskId = $request->task_id;
-//
-//        } catch (\Exeption $exception){
-//            return response()->json(['status'=> FALSE, 'error'=>$exception->getMessage()],500);
-//        }
-//    }
+    public function updateTaskTiming(Request $request){
+        try{
+            $taskId = $request->task_id;
+            $check = $this->checkAuth($taskId);
+            if (!$check){
+                throw new CustomValidationException('Unauthorized Action');
+            }
+            $id = $request->schedule_id; // Id of the row in schedule_timings table in which we need to update date
+            $date = $request->date;
+            $this->todoService->updateTaskDate($id,$date);
+            return response()->json(['status' => true, 'message' => 'Date updated successfully'],200);
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()], 204);
+        }
+        catch (\Exception $exception){
+            return response()->json(['status'=> FALSE, 'error'=>$exception->getMessage()],500);
+        }
+    }
 
     /**
      * get all task of logged in user of which have schedule date is equal to today
-     * @return \Illuminate\Http\JsonResponse
      */
     public function getTodaysTasks(){
         try{
-            $todayTask = Task::with(['todayTaskTiming'=>function ($q){
-                $q->where('schedule_time','=',Carbon::today()->toDateTimeString());
-            }])->whereHas('todayTaskTiming')
-                ->where('user_id',Auth::user()->id)->get();
-            if (!$todayTask){
-                throw new CustomValidationException('No matching results founds');
-            }
+            $todayTask = $this->todoService->getTodayTask();
             return response()->json(['status'=>TRUE, 'data' =>$todayTask ],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
-
     }
 
     /**
@@ -238,19 +250,15 @@ class TodoController extends Controller
      */
     public function todayTaskCount(){
         try{
-            $task = $this->getTodaysTasks();
+            $task = $this->todoService->getTodayTask();
             $todayTaskCount = $task->count();
-            if (!$todayTaskCount){
+            if ($todayTaskCount == 0){
                 throw new CustomValidationException('No task for today');
             }
             return response()->json(['Today' => $todayTaskCount, 'status'=>TRUE],200);
-
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
-        } catch (\Exception $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
-
     }
 
     /**
@@ -259,14 +267,7 @@ class TodoController extends Controller
      */
     public function getNextSevenDaysTasks(){
         try{
-            $sevenDayTask = Task::with(['sevenDaysTaskTiming'=>function ($q){
-                $q->whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()])
-                    ->orderBy('schedule_time');
-            }])->whereHas('sevenDaysTaskTiming')
-                ->where('user_id',Auth::user()->id)->get();
-            if (!$sevenDayTask){
-                throw new CustomValidationException('No Records Found');
-            }
+            $sevenDayTask = $this->todoService->getNextSevenDaysTask();
             return response()->json(['status' => TRUE,'data'=>$sevenDayTask],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
@@ -281,9 +282,9 @@ class TodoController extends Controller
      */
     public function countSevenDaysTasks(){
         try{
-            $task = $this->getNextSevenDaysTasks();
+            $task = $this->todoService->getNextSevenDaysTask();
             $sevenDayTaskCount = $task->count();
-            if (!$sevenDayTaskCount){
+            if ($sevenDayTaskCount == 0){
                 throw new CustomValidationException('No task for today');
             }
             return response()->json(['Today' => $sevenDayTaskCount, 'status'=>TRUE],200);
@@ -305,4 +306,6 @@ class TodoController extends Controller
             $incomplete = Task::where('status','Incomplete')->count();
             return response()->json(['data'=>$incomplete .'/'.$totalTask,'status'=>TRUE],200);
     }
+
+
 }
