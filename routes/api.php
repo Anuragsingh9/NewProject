@@ -37,6 +37,6 @@ Route::middleware('auth:api')->group(function() {
     Route::get('sevenDays/count','TodoController@countSevenDaysTasks'); // count all task of next seven days of logged in user
     Route::get('count/task','TodoController@countTask'); // count task in fraction of completed and incomplete task
     Route::post('update/date','TodoController@updateTaskTiming');
-
+    Route::get('particular-date/task','TodoController@getParticularDateTask');
 
 });

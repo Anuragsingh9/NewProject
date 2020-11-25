@@ -153,8 +153,9 @@ class TodoController extends Controller
             if (!$check){
                 throw new CustomValidationException('Task not found');
             }
-             Task::with('user')->where('id',$taskId)->first();
-            return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
+             $task = Task::with('particularDate')->where('id',$taskId)->first();
+            return response()->json(['status'=> TRUE, 'data'=> $task],200 );
+//            return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $e){
@@ -179,7 +180,7 @@ class TodoController extends Controller
             }
             return response()->json($task);
         } catch (CustomValidationException $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],200);
         } catch (\Exception $e){
             return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
         }
@@ -198,6 +199,12 @@ class TodoController extends Controller
             if (!$check){
                 throw new CustomValidationException('Unauthorized Action');
             }
+            $dateExist = TaskTiming::where('task_id',$taskId)
+                ->where('schedule_time',$request->schedule_time)->count();
+//            dd($dateExist);
+            if ($dateExist !== 0 ){
+                throw new CustomValidationException('Task already added for date');
+            }
             $param = [
                 'schedule_time' => $request->schedule_time,
                 'task_id' => $request->task_id,
@@ -205,7 +212,7 @@ class TodoController extends Controller
             $taskDate = $this->todoService->createTaskTiming($param);
            return (new TaskTimingResource($taskDate))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],200);
         } catch (\Exception $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
         }
@@ -289,9 +296,9 @@ class TodoController extends Controller
             }
             return response()->json(['Today' => $sevenDayTaskCount, 'status'=>TRUE],200);
         } catch (CustomValidationException $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
         } catch (\Exception $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],403);
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
         }
     }
 
@@ -306,6 +313,21 @@ class TodoController extends Controller
             $incomplete = Task::where('status','Incomplete')->count();
             return response()->json(['data'=>$incomplete .'/'.$totalTask,'status'=>TRUE],200);
     }
+
+
+    public function getParticularDateTask(Request $request){
+        try{
+            $date = $request->date;
+            $getDate = new Carbon($date);
+            $task = $this->todoService->getDateTask($getDate);
+            return response()->json(['status' =>TRUE,'data' => $task],200);
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
+        } catch (\Exception $exception){
+            return response()->json(['status' => FALSE,'error'=>$exception->getMessage()],500);
+        }
+    }
+
 
 
 }

@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 
 class TodoService
 {
-
     /**
      * @return static|null
      */
@@ -122,4 +121,17 @@ class TodoService
         return $sevenDayTask;
     }
 
+    public function getDateTask($getDate){
+        $task = Task::with(['otherDates' =>function($q) use ($getDate){
+            $q->where('schedule_time','=',$getDate->toDateTimeString());
+        }])->whereHas('otherDates', function($q) use ($getDate){
+            $q->where('schedule_time','=',$getDate->toDateTimeString());
+        })->where('user_id',Auth::user()->id)
+            ->orWhere('schedule_time','=',$getDate->toDateTimeString())
+            ->get();
+        if ($task->count() == 0){
+            throw new CustomValidationException('No records for '.$getDate->toDateString());
+        }
+        return $task;
+    }
 }
