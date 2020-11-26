@@ -50,7 +50,7 @@ class TodoController extends Controller
                 'user_id'   => Auth::user()->id,
                 'schedule_time' => $request->schedule_time,
             ];
-            $task = $this->taskCreate($param);
+            $task = $this->todoService->taskCreate($param);
             $taskId = $task->id;
             $param = [
                 'schedule_time' => $request->schedule_time,
@@ -315,6 +315,11 @@ class TodoController extends Controller
     }
 
 
+    /**
+     * get all the task of a given date from user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getParticularDateTask(Request $request){
         try{
             $date = $request->date;
