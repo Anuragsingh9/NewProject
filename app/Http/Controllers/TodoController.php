@@ -163,14 +163,29 @@ class TodoController extends Controller
         }
     }
 
+    public function searchTask(Request $request){
+        try{
+            $title = $request->title;
+            $date  = $request->date;
+            if ($title != null){
+                return $this->searchByTitle($title);
+            } elseif ($date != null){
+                return $this->searchByDate($date);
+            }
+            else{
+                return $this->searchByTitle($title);
+            }
+        } catch (\Exception $exception){
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
+        }
+    }
     /**
      * search task of logged in user by title of the task
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function searchTask(Request $request){
+    public function searchByTitle($title){
         try{
-            $title = $request->title;
             $task = Task::where(function ($q) use ($title){
                 $q->where('title', 'LIKE',"%$title%");
                 $q->where('user_id',Auth::user()->id);
@@ -183,6 +198,23 @@ class TodoController extends Controller
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],200);
         } catch (\Exception $e){
             return response()->json(['status' => FALSE, 'message' =>'Internal Server Error','error' => $e->getMessage()],500);
+        }
+    }
+
+    /**
+     * get all the task of a given date from user
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchByDate($date){
+        try{
+            $getDate = new Carbon($date);
+            $task = $this->todoService->getDateTask($getDate);
+            return response()->json(['status' =>TRUE,'data' => $task],200);
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
+        } catch (\Exception $exception){
+            return response()->json(['status' => FALSE,'error'=>$exception->getMessage()],500);
         }
     }
 
@@ -201,7 +233,6 @@ class TodoController extends Controller
             }
             $dateExist = TaskTiming::where('task_id',$taskId)
                 ->where('schedule_time',$request->schedule_time)->count();
-//            dd($dateExist);
             if ($dateExist !== 0 ){
                 throw new CustomValidationException('Task already added for date');
             }
@@ -315,23 +346,7 @@ class TodoController extends Controller
     }
 
 
-    /**
-     * get all the task of a given date from user
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getParticularDateTask(Request $request){
-        try{
-            $date = $request->date;
-            $getDate = new Carbon($date);
-            $task = $this->todoService->getDateTask($getDate);
-            return response()->json(['status' =>TRUE,'data' => $task],200);
-        } catch (CustomValidationException $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
-        } catch (\Exception $exception){
-            return response()->json(['status' => FALSE,'error'=>$exception->getMessage()],500);
-        }
-    }
+
 
 
 
