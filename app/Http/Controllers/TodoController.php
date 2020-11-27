@@ -310,7 +310,7 @@ class TodoController extends Controller
     public function countTask(){
             $task = Task::where('user_id',Auth::user()->id)->get();
             $totalTask = $task->count();
-            $incomplete = Task::where('status','Incomplete')->count();
+            $incomplete = Task::where('status','Incomplete')->where('user_id',Auth::user()->id)->count();
             return response()->json(['data'=>$incomplete .'/'.$totalTask,'status'=>TRUE],200);
     }
 
@@ -332,6 +332,7 @@ class TodoController extends Controller
             return response()->json(['status' => FALSE,'error'=>$exception->getMessage()],500);
         }
     }
+
 
 
 
