@@ -163,32 +163,34 @@ class TodoController extends Controller
         }
     }
 
-    public function searchTask(Request $request){
-        try{
-            $title = $request->title;
-            $date  = $request->date;
-            if ($title != null){
-                return $this->searchByTitle($title);
-            } elseif ($date != null){
-                return $this->searchByDate($date);
-            }
-            else{
-                return $this->searchByTitle($title);
-            }
-        } catch (\Exception $exception){
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
-        }
-    }
+//    public function searchTask(Request $request){
+//        try{
+//            $title = $request->title;
+//            $date  = $request->date;
+//            if ($title != null){
+//                return $this->searchByTitle($title);
+//            } elseif ($date != null){
+//                return $this->searchByDate($date);
+//            }
+//            else{
+//                return $this->searchByTitle($title);
+//            }
+//        } catch (\Exception $exception){
+//            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
+//        }
+//    }
     /**
      * search task of logged in user by title of the task
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function searchByTitle($title){
+    public function searchTask(Request $request){
         try{
+            $title = $request->title;
             $task = Task::where(function ($q) use ($title){
                 $q->where('title', 'LIKE',"%$title%");
                 $q->where('user_id',Auth::user()->id);
+                $q->orWhere('schedule_time','LIKE',"%$title");
             })->get();
             if (count($task) == 0){
                 throw new CustomValidationException('No matching results founds');
