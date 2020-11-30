@@ -196,18 +196,6 @@ class TodoController extends Controller
                 $query->where('schedule_time','LIKE',"%$title");
                     })
             ->get();
-
-//            $task = Task::
-//            where(function ($q) use ($title){
-//                $q->where('title', 'LIKE',"%$title%");
-//                $q->where('user_id',Auth::user()->id);
-//                $q->orWhere('schedule_time','LIKE',"%$title");
-//            })->
-//        whereHas('otherDates'
-//                , function( $query ) use ( $title ){
-//                $query->where('schedule_time','LIKE',"%$title");
-//            })->
-//            get();
             if (count($task) == 0){
                 throw new CustomValidationException('No matching results founds');
             }
