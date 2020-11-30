@@ -153,7 +153,7 @@ class TodoController extends Controller
             if (!$check){
                 throw new CustomValidationException('Task not found');
             }
-             $task = Task::with('particularDate')->where('id',$taskId)->first();
+             $task = Task::with('otherDates')->where('id',$taskId)->first();
             return response()->json(['status'=> TRUE, 'data'=> $task],200 );
 //            return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception) {
@@ -187,11 +187,27 @@ class TodoController extends Controller
     public function searchTask(Request $request){
         try{
             $title = $request->title;
-            $task = Task::where(function ($q) use ($title){
-                $q->where('title', 'LIKE',"%$title%");
-                $q->where('user_id',Auth::user()->id);
-                $q->orWhere('schedule_time','LIKE',"%$title");
-            })->get();
+            $task = Task::where('user_id',Auth::user()->id)
+                ->where(function ($q) use ($title){
+                    $q->whereDate('schedule_time','LIKE',"%$title%");
+                    $q->orWhere('title', 'LIKE',"%$title%");
+            })
+            ->orWhereHas('otherDates', function( $query ) use ( $title ){
+                $query->where('schedule_time','LIKE',"%$title");
+                    })
+            ->get();
+
+//            $task = Task::
+//            where(function ($q) use ($title){
+//                $q->where('title', 'LIKE',"%$title%");
+//                $q->where('user_id',Auth::user()->id);
+//                $q->orWhere('schedule_time','LIKE',"%$title");
+//            })->
+//        whereHas('otherDates'
+//                , function( $query ) use ( $title ){
+//                $query->where('schedule_time','LIKE',"%$title");
+//            })->
+//            get();
             if (count($task) == 0){
                 throw new CustomValidationException('No matching results founds');
             }
