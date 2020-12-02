@@ -48,7 +48,7 @@ class TodoController extends Controller
                 'title'     => $request->title,
                 'status'    => $request->status,
                 'user_id'   => Auth::user()->id,
-                'schedule_time' => $request->schedule_time,
+//                'schedule_time' => $request->schedule_time,
             ];
             $task = $this->todoService->taskCreate($param);
             $taskId = $task->id;
@@ -97,12 +97,14 @@ class TodoController extends Controller
      */
     public function getTasksByUser(){
         try{
-            $task = Task::where('user_id',Auth::user()->id)
+            $task = Task::with('scheduleTime')->where('user_id',Auth::user()->id)
                 ->orderBy('created_at', 'desc')->get();
             if (!$task){
                 throw new CustomValidationException('Not Found');
             }
-            return TaskResource::collection($task)->additional(['status' => TRUE]);
+            return response()->json(['status'=> TRUE, 'data'=> $task],200 );
+
+//            return TaskResource::collection($task)->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception){
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $e){
@@ -153,7 +155,7 @@ class TodoController extends Controller
             if (!$check){
                 throw new CustomValidationException('Task not found');
             }
-             $task = Task::with('otherDates')->where('id',$taskId)->first();
+             $task = Task::with('scheduleTime')->where('id',$taskId)->first();
             return response()->json(['status'=> TRUE, 'data'=> $task],200 );
 //            return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception) {
@@ -187,19 +189,19 @@ class TodoController extends Controller
     public function searchTask(Request $request){
         try{
             $title = $request->title;
-            $task = Task::where('user_id',Auth::user()->id)
+            $task = Task::with('scheduleTime')->where('user_id',Auth::user()->id)
                 ->where(function ($q) use ($title){
-                    $q->whereDate('schedule_time','LIKE',"%$title%");
+//                    $q->whereDate('schedule_time','LIKE',"%$title%");
                     $q->orWhere('title', 'LIKE',"%$title%");
             })
-            ->orWhereHas('otherDates', function( $query ) use ( $title ){
+            ->orWhereHas('scheduleTime', function( $query ) use ( $title ){
                 $query->where('schedule_time','LIKE',"%$title");
                     })
             ->get();
             if (count($task) == 0){
                 throw new CustomValidationException('No matching results founds');
             }
-            return response()->json($task);
+            return response()->json(['status' => TRUE,'data' => $task],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],200);
         } catch (\Exception $e){

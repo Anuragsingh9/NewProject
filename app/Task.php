@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Task extends Model
 {
     protected $fillable = ['user_id', 'title', 'status','schedule_time'];
-//    protected $hidden = ['schedule_time'];
+    protected $hidden = ['created_at','updated_at','schedule_time'];
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -34,7 +34,7 @@ class Task extends Model
                 [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()]);
     }
 
-    public function otherDates()
+    public function scheduleTime()
     {
         return $this->hasMany(TaskTiming::class,'task_id');
     }
