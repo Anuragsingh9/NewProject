@@ -38,5 +38,5 @@ Route::middleware('auth:api')->group(function() {
     Route::get('count/task','TodoController@countTask'); // count task in fraction of completed and incomplete task
     Route::post('update/date','TodoController@updateTaskTiming'); //update a schedule date
 //    Route::get('particular-date/task','TodoController@getParticularDateTask'); //get all the task of a given  date
-
+    Route::post('date/delete','TodoController@deleteScheduleDate');
 });

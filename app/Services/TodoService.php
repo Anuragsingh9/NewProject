@@ -134,4 +134,9 @@ class TodoService
         }
         return $task;
     }
+
+    public function deleteDate($dateId){
+        $deleteDate = TaskTiming::where('id',$dateId)->first();
+        return $deleteDate->delete();
+    }
 }

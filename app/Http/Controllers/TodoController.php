@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\CustomValidationException;
 use App\Http\Requests\CreateTaskRequest;
+use App\Http\Requests\DeleteDateRequest;
 use App\Http\Requests\DeleteTaskRequest;
 use App\Http\Requests\SetTaskTimingRequest;
 use App\Http\Requests\UpdateTaskRequest;
@@ -102,9 +103,10 @@ class TodoController extends Controller
             if (!$task){
                 throw new CustomValidationException('Not Found');
             }
-            return response()->json(['status'=> TRUE, 'data'=> $task],200 );
 
-//            return TaskResource::collection($task)->additional(['status' => TRUE]);
+//            return response()->json(['status'=> TRUE, 'data'=> $task],200 );
+
+            return TaskResource::collection($task)->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception){
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $e){
@@ -156,8 +158,10 @@ class TodoController extends Controller
                 throw new CustomValidationException('Task not found');
             }
              $task = Task::with('scheduleTime')->where('id',$taskId)->first();
-            return response()->json(['status'=> TRUE, 'data'=> $task],200 );
-//            return (new TaskResource(Task::find($taskId)))->additional(['status' => TRUE]);
+//            return TaskResource::collection($task)->additional(['status' => TRUE]);
+
+//            return response()->json(['status'=> TRUE, 'data'=> $task],200 );
+            return (new TaskResource($task))->additional(['status' => TRUE]);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $e){
@@ -184,7 +188,6 @@ class TodoController extends Controller
     /**
      * search task of logged in user by title of the task
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
     public function searchTask(Request $request){
         try{
@@ -201,7 +204,9 @@ class TodoController extends Controller
             if (count($task) == 0){
                 throw new CustomValidationException('No matching results founds');
             }
-            return response()->json(['status' => TRUE,'data' => $task],200);
+            return TaskResource::collection($task)->additional(['status' => TRUE]);
+
+//            return response()->json(['status' => TRUE,'data' => $task],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],200);
         } catch (\Exception $e){
@@ -209,22 +214,22 @@ class TodoController extends Controller
         }
     }
 
-    /**
-     * get all the task of a given date from user
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function searchByDate($date){
-        try{
-            $getDate = new Carbon($date);
-            $task = $this->todoService->getDateTask($getDate);
-            return response()->json(['status' =>TRUE,'data' => $task],200);
-        } catch (CustomValidationException $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
-        } catch (\Exception $exception){
-            return response()->json(['status' => FALSE,'error'=>$exception->getMessage()],500);
-        }
-    }
+//    /**
+//     * get all the task of a given date from user
+//     * @param Request $request
+//     * @return \Illuminate\Http\JsonResponse
+//     */
+//    public function searchByDate($date){
+//        try{
+//            $getDate = new Carbon($date);
+//            $task = $this->todoService->getDateTask($getDate);
+//            return response()->json(['status' =>TRUE,'data' => $task],200);
+//        } catch (CustomValidationException $exception) {
+//            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
+//        } catch (\Exception $exception){
+//            return response()->json(['status' => FALSE,'error'=>$exception->getMessage()],500);
+//        }
+//    }
 
     /**
      * set a schedule timing for a task.
@@ -264,7 +269,7 @@ class TodoController extends Controller
             if (!$check){
                 throw new CustomValidationException('Unauthorized Action');
             }
-            $id = $request->schedule_id; // Id of the row in schedule_timings table in which we need to update date
+            $id = $request->date_id; // Id of the row in schedule_timings table in which we need to update date
             $date = $request->date;
             $this->todoService->updateTaskDate($id,$date);
             return response()->json(['status' => true, 'message' => 'Date updated successfully'],200);
@@ -282,7 +287,9 @@ class TodoController extends Controller
     public function getTodaysTasks(){
         try{
             $todayTask = $this->todoService->getTodayTask();
-            return response()->json(['status'=>TRUE, 'data' =>$todayTask ],200);
+            return TaskResource::collection($todayTask)->additional(['status' => TRUE]);
+
+//            return response()->json(['status'=>TRUE, 'data' =>$todayTask ],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $exception) {
@@ -309,12 +316,13 @@ class TodoController extends Controller
 
     /**
      * get all the task of logged in user which have schedule date for next seven days
-     * @return \Illuminate\Http\JsonResponse
      */
     public function getNextSevenDaysTasks(){
         try{
             $sevenDayTask = $this->todoService->getNextSevenDaysTask();
-            return response()->json(['status' => TRUE,'data'=>$sevenDayTask],200);
+            return TaskResource::collection($sevenDayTask)->additional(['status' => TRUE]);
+
+//            return response()->json(['status' => TRUE,'data'=>$sevenDayTask],200);
         } catch (CustomValidationException $exception) {
             return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],204);
         } catch (\Exception $exception) {
@@ -353,6 +361,16 @@ class TodoController extends Controller
             return response()->json(['data'=>$incomplete .'/'.$totalTask,'status'=>TRUE],200);
     }
 
+    public function deleteScheduleDate(DeleteDateRequest $request){
+        try{
+            $dateId = $request->date_id;
+            $this->todoService->deleteDate($dateId);
+            return response()->json(['status' => TRUE,'message' => 'Date removed'],200);
+        }
+        catch (\Exception $exception){
+            return response()->json(['status' => TRUE, 'error' => $exception->getMessage()],500);
+        }
+    }
 
 
 
