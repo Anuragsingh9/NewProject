@@ -112,10 +112,10 @@ class AuthController extends Controller
                     throw new CustomValidationException('Password did not matched');
             }
         } catch (CustomValidationException $exception) {
-            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
+            return response()->json(['status' => FALSE, 'msg' => $exception->getMessage()],500);
             }
-        catch (\Exception $e){
-            return response()->json(['status' => FALSE, 'error' => $e->getMessage()], 500);
+        catch (\Exception $exception){
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()], 500);
         }
     }
 
