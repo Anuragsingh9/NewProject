@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class LoginRequest extends FormRequest
@@ -26,12 +27,13 @@ class LoginRequest extends FormRequest
      */
     public function rules()
     {
+
         return [
            'email'=>['required',
                Rule::exists('users', 'email'),
                ],
             'password'=>'required',
-            'password_confirmation' => 'same:password',
+//            'password_confirmation' => 'same:password',
         ];
     }
 

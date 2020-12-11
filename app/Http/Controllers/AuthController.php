@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CustomValidationException;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
 /**
  * @OA\Info(title="My First API", version="0.1")
  */
@@ -89,28 +92,31 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         try{
-            if( Auth::attempt(['email'=>$request->email, 'password'=>$request->password,'password_confirmation'=>$request->password_confirmation]) ) {
+            if( Auth::attempt(['email'=>$request->email, 'password'=>$request->password]) ) {
                 $user = Auth::user();
-                $tokenResult = $user->createToken('Personal Access Token');
-                $token = $tokenResult->token;
-                if ($request->remember_me){
-                    $token->expires_at = Carbon::now()->addHours(1);
-                    $token->save();
-                }
-                return response()->json([
-                    
-                    'access_token' => $tokenResult->accessToken,
-                    'token_type' => 'Bearer',
-                    'expires_at' => Carbon::parse(
-                        $tokenResult->token->expires_at
-                    )->toDateTimeString(),
-                    'status' => TRUE
-                ]);
+                    $tokenResult = $user->createToken('Personal Access Token');
+                    $token = $tokenResult->token;
+                    if ($request->remember_me){
+                        $token->expires_at = Carbon::now()->addHours(1);
+                        $token->save();
+                    }
+                    return response()->json([
+                        'access_token' => $tokenResult->accessToken,
+                        'token_type' => 'Bearer',
+                        'expires_at' => Carbon::parse(
+                            $tokenResult->token->expires_at
+                        )->toDateTimeString(),
+                        'status' => TRUE
+                    ]);
+                } else {
+                    throw new CustomValidationException('Password did not matched');
             }
-        } catch (\Exception $e){
+        } catch (CustomValidationException $exception) {
+            return response()->json(['status' => FALSE, 'error' => $exception->getMessage()],500);
+            }
+        catch (\Exception $e){
             return response()->json(['status' => FALSE, 'error' => $e->getMessage()], 500);
         }
-
     }
 
     /**
