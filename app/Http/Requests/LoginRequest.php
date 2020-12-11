@@ -31,6 +31,7 @@ class LoginRequest extends FormRequest
                Rule::exists('users', 'email'),
                ],
             'password'=>'required',
+            'password_confirmation' => 'same:password',
         ];
     }
 

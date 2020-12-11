@@ -89,7 +89,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         try{
-            if( Auth::attempt(['email'=>$request->email, 'password'=>$request->password]) ) {
+            if( Auth::attempt(['email'=>$request->email, 'password'=>$request->password,'password_confirmation'=>$request->password_confirmation]) ) {
                 $user = Auth::user();
                 $tokenResult = $user->createToken('Personal Access Token');
                 $token = $tokenResult->token;
