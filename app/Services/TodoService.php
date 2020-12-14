@@ -110,15 +110,16 @@ class TodoService
      */
     public function getNextSevenDaysTask(){
         $sevenDayTask = Task::with(['sevenDaysTaskTiming'=>function ($q){
-            $q->whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()])
-                ->orderBy('schedule_time');
+            $q->whereBetween('schedule_time', [Carbon::today()->toDateTimeString(), Carbon::today()->addDays(7)->toDateTimeString()]);
+
         }])->whereHas('sevenDaysTaskTiming')
             ->where('user_id',Auth::user()->id)
+            ->orderBy('title')
             ->get();
-        if ($sevenDayTask == NULL){
+        if ($sevenDayTask === NULL){
             throw new CustomValidationException('No Records Found');
         }
-        return $sevenDayTask;
+        return  $sevenDayTask;
     }
 
     public function getDateTask($getDate){
